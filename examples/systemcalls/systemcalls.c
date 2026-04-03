@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -77,7 +78,7 @@ bool do_exec(int count, ...)
     {
         /* pid of '0' indicates it is the child */
         /* so, go ahead and use execv to pass the command to a system shell*/
-        execv(&command[0],&command[1]);
+        execv(command[0],&command[1]);
         /* if successful, we won't ever come here */
         exit (-1);
     }
@@ -144,7 +145,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
         /* pid of '0' indicates it is the child */
         /* so, go ahead and use execv to pass the command to a system shell*/
-        execv(&command[0],&command[1]);
+        execv(command[0],&command[1]);
         /* if successful, we won't ever come here */
         exit (-1);
     }
