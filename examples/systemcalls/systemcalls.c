@@ -80,7 +80,7 @@ bool do_exec(int count, ...)
         /* so, go ahead and use execv to pass the command to a system shell*/
         execv(command[0],&command[1]);
         /* if successful, we won't ever come here */
-        exit (-1);
+        return false;
     }
     else
     {
