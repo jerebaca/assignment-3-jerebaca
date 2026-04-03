@@ -12,7 +12,6 @@ bool do_system(const char *cmd)
 {
 
 /*
- * TODO  add your code here
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
@@ -51,12 +50,8 @@ bool do_exec(int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
 
 /*
- * TODO:
  *   Execute a system command by calling fork, execv(),
  *   and wait instead of system (see LSP page 161).
  *   Use the command[0] as the full path to the command to execute
@@ -114,9 +109,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
-    command[count] = command[count];
 
 
 /*
@@ -126,6 +118,52 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+
+    int status;
+    int pid;
+    int kidpid;
+    int fd = open(outputfile);
+    if (fd < 0) { perror("open"); abort(); }
+    switch (kidpid = fork()) {
+        case -1: perror("fork"); abort();
+        case 0:
+            if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
+            close(fd);
+            execvp(cmd, args); perror("execvp"); abort();
+        default:
+            close(fd);
+            /* do whatever the parent wants to do. */
+    }
+
+    pid = fork();
+
+    /* Two processes are now running here */
+
+    if ( pid == -1 ) /* check if fork was unsuccessful */
+    {
+        return -1;
+    }
+    else if (pid == 0)
+    {
+        /* redirect stdout to file */
+        if (dup2(fd, 1) < 0) { exit(-1); }
+        close(fd); /* close the fd as it's not needed anymore */
+
+        /* pid of '0' indicates it is the child */
+        /* so, go ahead and use execv to pass the command to a system shell*/
+        execv(&command[0],&command[1]);
+        /* if successful, we won't ever come here */
+        exit (-1);
+    }
+    else
+    {
+        close(fd);
+        /* still in the parent thread, wait for the child */
+        /* fork returns the pid of the child to the parent*/
+        if ( -1 == wait(&status) ) return -1; /* something went wrong */
+        else if (WIFEXITED(status)) return WEXITSTATUS(status); /* child exited normally, forward the return*/
+        else return -1; /* child did not exit normally */
+    }
 
     va_end(args);
 
