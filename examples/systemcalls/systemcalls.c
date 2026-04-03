@@ -76,6 +76,7 @@ bool do_exec(int count, ...)
     }
     else if (pid == 0)
     {
+        printf("child executing");
         /* pid of '0' indicates it is the child */
         /* so, go ahead and use execv to pass the command to a system shell*/
         execv(command[0],&command[1]);
