@@ -116,7 +116,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
 
 /*
- * TODO
  *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
  *   redirect standard out to a file specified by outputfile.
  *   The rest of the behaviour is same as do_exec()
@@ -125,7 +124,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     int status;
     int pid;
-    int fd = open(outputfile);
+    int fd = open(outputfile,O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) { exit(-1); }
 
 
