@@ -1,4 +1,5 @@
 #include "systemcalls.h"
+#include "sys/wait.h"
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +17,13 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
+    bool retval = true;
+    if ( 0U != system(cmd))
+    {
+        retval = false;
+    }
 
-    return true;
+    return retval;
 }
 
 /**
@@ -58,6 +64,34 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    int status;
+    int pid;
+
+    pid = fork();
+
+    /* Two processes are now running here */
+
+    if ( pid == -1 ) /* check if fork was unsuccessful */
+    {
+        return -1;
+    }
+    else if (pid == 0)
+    {
+        /* pid of '0' indicates it is the child */
+        /* so, go ahead and use execv to pass the command to a system shell*/
+        execv(&command[0],&command[1]);
+        /* if successful, we won't ever come here */
+        exit (-1);
+    }
+    else
+    {
+        /* still in the parent thread, wait for the child */
+        /* fork returns the pid of the child to the parent*/
+        if ( -1 == wait(&status) ) return -1; /* something went wrong */
+        else if (WIFEXITED(status)) return WEXITSTATUS(status); /* child exited normally, forward the return*/
+        else return -1; /* child did not exit normally */
+    }
+
 
     va_end(args);
 
