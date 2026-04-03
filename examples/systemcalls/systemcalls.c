@@ -1,6 +1,6 @@
 #include "systemcalls.h"
 #include "sys/wait.h"
-
+#include <stdlib.h>
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -121,19 +121,9 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     int status;
     int pid;
-    int kidpid;
     int fd = open(outputfile);
-    if (fd < 0) { perror("open"); abort(); }
-    switch (kidpid = fork()) {
-        case -1: perror("fork"); abort();
-        case 0:
-            if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
-            close(fd);
-            execvp(cmd, args); perror("execvp"); abort();
-        default:
-            close(fd);
-            /* do whatever the parent wants to do. */
-    }
+    if (fd < 0) { exit(-1); }
+
 
     pid = fork();
 
