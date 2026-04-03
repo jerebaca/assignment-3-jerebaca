@@ -76,12 +76,11 @@ bool do_exec(int count, ...)
     }
     else if (pid == 0)
     {
-        printf("child executing");
         /* pid of '0' indicates it is the child */
         /* so, go ahead and use execv to pass the command to a system shell*/
-        execv(command[0],&command[1]);
+        execv(command[0],command);
         /* if successful, we won't ever come here */
-        return false;
+        exit(-1);
     }
     else
     {
@@ -89,8 +88,13 @@ bool do_exec(int count, ...)
         /* fork returns the pid of the child to the parent*/
         if ( -1 == wait(&status) ) return false; /* something went wrong */
         else if (WIFEXITED(status)) {
-            if (WEXITSTATUS(status) != 0) return false;
-            else return true;
+            if (WEXITSTATUS(status) != 0)
+            {
+                return false;
+            } 
+            else {
+                return true;
+            }
         }  
         else { return false; }; /* child did not exit normally */
     }
@@ -148,7 +152,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
         /* pid of '0' indicates it is the child */
         /* so, go ahead and use execv to pass the command to a system shell*/
-        execv(command[0],&command[1]);
+        execv(command[0],command);
         /* if successful, we won't ever come here */
         return false;
     }
