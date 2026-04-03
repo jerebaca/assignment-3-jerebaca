@@ -72,7 +72,7 @@ bool do_exec(int count, ...)
 
     if ( pid == -1 ) /* check if fork was unsuccessful */
     {
-        return -1;
+        return false;
     }
     else if (pid == 0)
     {
@@ -86,9 +86,12 @@ bool do_exec(int count, ...)
     {
         /* still in the parent thread, wait for the child */
         /* fork returns the pid of the child to the parent*/
-        if ( -1 == wait(&status) ) return -1; /* something went wrong */
-        else if (WIFEXITED(status)) return WEXITSTATUS(status); /* child exited normally, forward the return*/
-        else return -1; /* child did not exit normally */
+        if ( -1 == wait(&status) ) return false; /* something went wrong */
+        else if (WIFEXITED(status)) {
+            if (WEXITSTATUS(status) != 0) return false;
+            else return true;
+        }  
+        else { return false; }; /* child did not exit normally */
     }
 
 
@@ -125,7 +128,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     int status;
     int pid;
     int fd = open(outputfile,O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd < 0) { exit(-1); }
+    if (fd < 0) { return false; }
 
 
     pid = fork();
@@ -146,16 +149,19 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         /* so, go ahead and use execv to pass the command to a system shell*/
         execv(command[0],&command[1]);
         /* if successful, we won't ever come here */
-        exit (-1);
+        return false;
     }
     else
     {
         close(fd);
         /* still in the parent thread, wait for the child */
         /* fork returns the pid of the child to the parent*/
-        if ( -1 == wait(&status) ) return -1; /* something went wrong */
-        else if (WIFEXITED(status)) return WEXITSTATUS(status); /* child exited normally, forward the return*/
-        else return -1; /* child did not exit normally */
+        if ( -1 == wait(&status) ) return false; /* something went wrong */
+        else if (WIFEXITED(status)) {
+            if (WEXITSTATUS(status) != 0) return false;
+            else return true;
+        }  
+        else { return false; }; /* child did not exit normally */
     }
 
     va_end(args);
