@@ -1,4 +1,4 @@
-
+#!/bin/sh
 if [ $# -ne 2 ]; then
 	echo "Error: Expected two arguments - directory for search and string to search for"
 	exit 1
